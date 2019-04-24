@@ -43,6 +43,8 @@ server <- function(input, output) {
     ))
   })
   
+  
+  
   count_number <- function(){
     num <<- 0
     for(i in 1:length(df_finished)){
@@ -73,13 +75,16 @@ server <- function(input, output) {
     rand <- as.integer(runif(100, min = 1, max = (length(df_english) + 1) ) ) 
     data <- c(seed,rand)
     data <- unique(data)
-    data <- c(data[1],data[2],data[3],data[4])
+    data <- sapply(1:ans_num, function(x) data[x])
     data <- sort(data)
     return(data)
   }
   
   create_data <- function(){
     count_number()
+    
+    ans_num <<- as.numeric(input$select)
+    
     if(flag1 == 0){
       output$question <- renderUI({
         question <- create_word()
@@ -90,13 +95,7 @@ server <- function(input, output) {
       })
       output$selections <- renderUI({
         selection <- create_selection(seed)
-        return(list(
-          
-          actionButton("1",df_japanese[selection[1]],width = "100%"),
-          actionButton("2",df_japanese[selection[2]],width = "100%"),
-          actionButton("3",df_japanese[selection[3]],width = "100%"),
-          actionButton("4",df_japanese[selection[4]],width = "100%")
-        ))
+        return(lapply(1:ans_num, function(x) actionButton(x,df_japanese[selection[x]],width = "100%")))
       })
     }
     else{
