@@ -1,0 +1,46 @@
+library(shiny)
+
+ui <- fluidPage(
+  titlePanel("Change"),
+  fileInput("file", "Choose CSV File",accept = c("text/csv","text/comma-separated-values,text/plain",".csv")),
+  actionButton("start","Make")
+)
+
+server <- function(input, output) {
+  
+  df <- read.csv("ex.csv")
+  df_original <- as.character(df$original)
+  # df <<- read.csv(input$file$datapath)
+
+    observeEvent(input$start,{
+    print(1)
+    change()
+    print(df_original)
+  })
+  
+  # delete_word <- function(x){
+  #   if(df[x] == "Level: AWL"){
+  #     
+  #   }
+  # }
+  
+  #不必要なの削除
+  change <- function(){
+    df_original[-which(df_original %in% c("Level: AWL"))] 
+  }
+  
+  
+  
+  df <- read.csv("ex.csv")
+  df_original <- as.character(df$original)
+  df_original <- df_original[-which(df_original %in% c("Level: AWL"))]
+  print(regexpr(": ", df_original))
+  print(regexpr("\(", df_original))
+  print(df_original)
+  
+  # if(match(": " & " (",df_original))
+  
+  
+}
+
+shinyApp(ui = ui, server = server)
