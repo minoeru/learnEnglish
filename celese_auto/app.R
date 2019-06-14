@@ -3,7 +3,7 @@ library(shiny)
 ui <- fluidPage(
   titlePanel("Change"),
   fileInput("file", "Choose CSV File",accept = c("text/csv","text/comma-separated-values,text/plain",".csv")),
-  selectInput("select", label = h6("Number of choices"), choices = list("1a" = 1, "1b" = 2, "2a" = 3, "2b" = 4, "3a" = 5, "3b" = 6, "4a" = 7, "4b" = 8, "5a" = 9, "5b" = 10), selected = 1),
+  selectInput("select", label = h6("Number of choices"), choices = list("1a" = 1, "1b" = 2, "2a" = 3, "2b" = 4, "3a" = 5, "3b" = 6, "4a" = 7, "4b" = 8, "5a" = 9, "5b" = 10, "6a" = 11, "6b" = 12, "7a" = 13, "7b" = 14, "8a" = 15, "8b" = 16, "9a" = 17, "9b" = 18), selected = 1),
   actionButton("start","Make")
 )
 
@@ -16,144 +16,142 @@ server <- function(input, output) {
   
   observeEvent(input$start,{
     change()
+    word <<- sapply(1:(length(word3) * 4), function(x){
+      word3[((x - 1) / 4) + 1]
+    })
+    word <<- unlist(word)
     change2()
     data_save()
     
   })
   
-  words1 <<- c("CELESE AWL Sublist 1a page 1 of 5","CELESE AWL Sublist 1a page 2 of 5",
-               "CELESE AWL Sublist 1a page 3 of 5","CELESE AWL Sublist 1a page 4 of 5",
-               "CELESE AWL Sublist 1a page 5 of 5")
-  words2 <<- c("CELESE AWL Sublist 1b page 1 of 5","CELESE AWL Sublist 1b page 2 of 5",
-               "CELESE AWL Sublist 1b page 3 of 5","CELESE AWL Sublist 1b page 4 of 5",
-               "CELESE AWL Sublist 1b page 5 of 5")
-  words3 <<- c("CELESE AWL Sublist 2a page 1 of 5","CELESE AWL Sublist 2a page 2 of 5",
-               "CELESE AWL Sublist 2a page 3 of 5","CELESE AWL Sublist 2a page 4 of 5",
-               "CELESE AWL Sublist 2a page 5 of 5")
-  words4 <<- c("CELESE AWL Sublist 2b page 1 of 5","CELESE AWL Sublist 2b page 2 of 5",
-               "CELESE AWL Sublist 2b page 3 of 5","CELESE AWL Sublist 2b page 4 of 5",
-               "CELESE AWL Sublist 2b page 5 of 5")
-  words5 <<- c("CELESE AWL Sublist 3a page 1 of 5","CELESE AWL Sublist 3a page 2 of 5",
-               "CELESE AWL Sublist 3a page 3 of 5","CELESE AWL Sublist 3a page 4 of 5",
-               "CELESE AWL Sublist 3a page 5 of 5")
-  words6 <<- c("CELESE AWL Sublist 3b page 1 of 5","CELESE AWL Sublist 3b page 2 of 5",
-               "CELESE AWL Sublist 3b page 3 of 5","CELESE AWL Sublist 3b page 4 of 5",
-               "CELESE AWL Sublist 3b page 5 of 5")
-  words7 <<- c("CELESE AWL Sublist 4a page 1 of 5","CELESE AWL Sublist 4a page 2 of 5",
-               "CELESE AWL Sublist 4a page 3 of 5","CELESE AWL Sublist 4a page 4 of 5",
-               "CELESE AWL Sublist 4a page 5 of 5")
-  words8 <<- c("CELESE AWL Sublist 4b page 1 of 5","CELESE AWL Sublist 4b page 2 of 5",
-               "CELESE AWL Sublist 4b page 3 of 5","CELESE AWL Sublist 4b page 4 of 5",
-               "CELESE AWL Sublist 4b page 5 of 5")
-  words9 <<- c("CELESE AWL Sublist 5a page 1 of 5","CELESE AWL Sublist 5a page 2 of 5",
-               "CELESE AWL Sublist 5a page 3 of 5","CELESE AWL Sublist 5a page 4 of 5",
-               "CELESE AWL Sublist 5a page 5 of 5")
-  words10 <<- c("CELESE AWL Sublist 5b page 1 of 5","CELESE AWL Sublist 5b page 2 of 5",
-                "CELESE AWL Sublist 5b page 3 of 5","CELESE AWL Sublist 5b page 4 of 5",
-                "CELESE AWL Sublist 5b page 5 of 5")
-  
-  all_words <<- list(words1,words2,words3,words4,words5,words6,words7,words8,words9,words10)
+  all_words <<- lapply(1:18,function(n){
+    sapply(1:5,function(x){
+      ifelse(n %% 2 == 1 , sen <- "a" , sen <- "b")
+      paste("CELESE AWL Sublist " , ceiling (n / 2)  , sen  , " page ",x," of 5",sep="")
+    })
+  })
   
   #不必要なの削除
   change <- function(){
     
     ans_num <<- as.numeric(input$select)
-    
     words_select(ans_num)
-    
     df_original_ <<- df_original[-which(df_original %in% c("Level: AWL"))]
-    
     df_original_ <<- df_original_[-which(df_original_ %in% c(selected_words[1]))]
     df_original_ <<- df_original_[-which(df_original_ %in% c(selected_words[2]))]
     df_original_ <<- df_original_[-which(df_original_ %in% c(selected_words[3]))]
     df_original_ <<- df_original_[-which(df_original_ %in% c(selected_words[4]))]
     df_original_ <<- df_original_[-which(df_original_ %in% c(selected_words[5]))]
-    
-    
+
+    # 単語の前の文字削除
     word1 <- sapply(1:length(df_original_), function(x) if(regexpr(": ", df_original_[x]) == 2 || regexpr(": ", df_original_[x]) == 3) df_original_[x])
     word2 <- unlist(word1)
+    # 単語の後ろの文字削除
     word3 <<- sapply(1:length(word2), function(x){
       if(x < 10) substr(word2[x], 4, regexpr("\\(", word2[x]) - 2)
       else substr(word2[x], 5, regexpr("\\(", word2[x]) - 2)
     })
+    # 単語削除
     sentence1 <- sapply(1:length(df_original_), function(x) if(regexpr(": ", df_original_[x]) != 2 && regexpr(": ", df_original_[x]) != 3) df_original_[x])
     sentence2 <- unlist(sentence1)
-    
+    # 邪魔な文字削除
     sentence2 <<- sentence2[-which(sentence2 %in% c("Level: AWL"))]
-    
-    # regexpr(": ", sentence2)
-    
-    
+    # バラバラの文をつなげる
     sentence3 <- sapply(1:length(sentence2), function(x){
       if(x != length(sentence2)){
-        if(regexpr(": ", sentence2[x + 1]) == -1 && regexpr("¥¥. ", sentence2[x + 1]) != 2) paste(sentence2[x] , sentence2[x + 1], sep = "")
-        else if(regexpr(": ", sentence2[x]) == -1 && regexpr("¥¥. ", sentence2[x + 1] )!= 2) NULL
+        if(regexpr(": ", sentence2[x + 1]) == -1 && regexpr("\\. ", sentence2[x + 1]) != 2) paste(sentence2[x] , sentence2[x + 1], sep = "")
+        else if(regexpr(": ", sentence2[x]) == -1 && regexpr("\\. ", sentence2[x + 1] )!= 2) NULL
         else sentence2[x]
       }
       else sentence2[x]
     })
     sentence3 <- unlist(sentence3)
-    
-    
-    
-    
-    sentence4 <- sapply(1:length(sentence3), function(x)if(regexpr(": ", sentence3[x]) != -1 || regexpr("¥¥. ", sentence2[x]) == 2) sentence3[x])
+    # 文をつなげる
+    sentence4 <- sapply(1:length(sentence3), function(x)if(regexpr(": ", sentence3[x]) != -1 || regexpr("\\. ", sentence2[x]) == 2) sentence3[x])
     sentence4 <- unlist(sentence4)
-    
-    
-    
+    # 文の番号を外す
     sentence5 <- sapply(1:length(sentence4),function(x){
       substr(sentence4[x],4, nchar(sentence4[x]))
     })
-    
+    # 文の前をはずす
     sentence <<- sapply(1:length(sentence5),function(x){
       substr(sentence5[x],regexpr(":", sentence5[x]) +2, nchar(sentence5[x])) 
     })
-    
   }
   
   change2 <- function() {
     
+    
+    
+    # 抜き出し単語の元
     deleted_word <<- (1:length(sentence))
-    
-    
+    # 文から抜き出す関数
     changed_sentence <<- sapply(1:length(sentence), function(x){
-      num <- 0
-      tmp <-strsplit(sentence[x]," ")
-      tmp <- unlist(tmp)
-      num <- charmatch(word[x], tmp, nomatch = 0)
-      
+      num <<- 0
+      tmp <<-strsplit(sentence[x]," ")
+      tmp <<- unlist(tmp)
+      # 元の単語と完全一致
+      num <<- match(word[x], tmp, nomatch = 0)
       if(num != 0){
         deleted_word[x] <<- tmp[num]
-        tmp[num] <- "_____"
+        deleted_word[x] <<- sub("\\.","",deleted_word[x])
+        deleted_word[x] <<- sub(",","",deleted_word[x])
+        tmp[num] <<- "_____"
         return( paste(tmp[1:length(tmp)],collapse = " ") ) 
       }
-      
-      
-      print( charmatch(substr(word[x],1,nchar(word[x]) - 1), tmp, nomatch = 0) )
-
-      num <- charmatch(substr(word[x],1,nchar(word[x]) - 1), tmp, nomatch = 0)
-
+      # 元の単語の後ろ2文字以外一致
+      num <- charmatch(substr(word[x],1,nchar(word[x]) - 2), tmp, nomatch = 0)
       if(num != 0){
         deleted_word[x] <<- tmp[num]
+        deleted_word[x] <<- sub("\\.","",deleted_word[x])
+        deleted_word[x] <<- sub(",","",deleted_word[x])
         tmp[num] <- "_____"
         return( paste(tmp[1:length(tmp)],collapse = " ") )
       }
-      # 
-      # 
-      # num <- charmatch(substr(word[1],1,nchar(word[1]) - 2), tmp, nomatch = 0)
-      # 
-      # if(num != 0){
-      #   deleted_word[x] <<- tmp[num]
-      #   tmp[num] <- "_____"
-      #   return( paste(tmp[1:length(tmp)],collapse = " ") ) 
-      # }
-      
-      
+      # 大文字対応
+      tmp_word <<- paste( toupper(substring(word[x],1,1)), substring(word[x],2,nchar(word[x]) ) ,sep = "" )
+      num <- charmatch(substr(tmp_word,1,nchar(tmp_word) - 2), tmp, nomatch = 0)
+      if(num != 0){
+        deleted_word[x] <<- tmp[num]
+        deleted_word[x] <<- sub("\\.","",deleted_word[x])
+        deleted_word[x] <<- sub(",","",deleted_word[x])
+        tmp[num] <<- "_____"
+        return( paste(tmp[1:length(tmp)],collapse = " ") ) 
+      }
+      # un対応
+      tmp_word <<- paste("un",word[x],sep = "" )
+      num <- charmatch(substr(tmp_word,1,nchar(tmp_word) - 2), tmp, nomatch = 0)
+      if(num != 0){
+        deleted_word[x] <<- tmp[num]
+        deleted_word[x] <<- sub("\\.","",deleted_word[x])
+        deleted_word[x] <<- sub(",","",deleted_word[x])
+        tmp[num] <<- "_____"
+        return( paste(tmp[1:length(tmp)],collapse = " ") ) 
+      }
+      # in対応
+      tmp_word <<- paste("in",word[x],sep = "" )
+      num <- charmatch(substr(tmp_word,1,nchar(tmp_word) - 2), tmp, nomatch = 0)
+      if(num != 0){
+        deleted_word[x] <<- tmp[num]
+        deleted_word[x] <<- sub("\\.","",deleted_word[x])
+        deleted_word[x] <<- sub(",","",deleted_word[x])
+        tmp[num] <<- "_____"
+        return( paste(tmp[1:length(tmp)],collapse = " ") ) 
+      }
+      # re対応
+      tmp_word <<- paste("re",word[x],sep = "" )
+      num <- charmatch(substr(tmp_word,1,nchar(tmp_word) - 2), tmp, nomatch = 0)
+      if(num != 0){
+        deleted_word[x] <<- tmp[num]
+        deleted_word[x] <<- sub("\\.","",deleted_word[x])
+        deleted_word[x] <<- sub(",","",deleted_word[x])
+        tmp[num] <<- "_____"
+        return( paste(tmp[1:length(tmp)],collapse = " ") ) 
+      }
       return( paste(tmp[1:length(tmp)],collapse = " ") )
       
     })
-    
   }
   
   words_select <- function(num){
@@ -163,24 +161,11 @@ server <- function(input, output) {
   
   data_save <- function(){
     
-    
-    word <<- sapply(1:(length(word3) * 4), function(x){
-      word3[((x - 1) / 4) + 1]
-    })
-    
-    word <<- unlist(word)
-    
     df_data <<- data.frame(
       word,sentence,changed_sentence,deleted_word
     )
-    # print( length(word) )
-    # print( length(sentence) )
-    # print( length(changed_sentence) )
-    # print( length(deleted_word) )
     write.csv(df_data,file = "changed_data.csv",row.names = FALSE)
   }
-  
-  
 }
 
 shinyApp(ui = ui, server = server)
